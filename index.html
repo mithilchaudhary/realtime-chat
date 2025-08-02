@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenAI Realtime Audio Chat</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎤 OpenAI Realtime Audio Chat</h1>
+            <p>Press "Start Chat" to begin your audio conversation</p>
+        </header>
+
+        <main>
+            <div class="chat-interface">
+                <div class="status-display">
+                    <div id="connection-status" class="status disconnected">
+                        <span class="status-dot"></span>
+                        <span class="status-text">Disconnected</span>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button id="start-chat-btn" class="btn primary">
+                        <span class="btn-icon">🎤</span>
+                        <span class="btn-text">Start Chat</span>
+                    </button>
+                    <button id="stop-chat-btn" class="btn secondary" disabled>
+                        <span class="btn-icon">⏹️</span>
+                        <span class="btn-text">Stop Chat</span>
+                    </button>
+                </div>
+
+                <div class="conversation-log">
+                    <div id="messages" class="messages">
+                        <div class="message system">
+                            <div class="message-content">
+                                Welcome! I'm here to help you with questions about Indian tourism. Click "Start Chat" to begin our audio conversation.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
