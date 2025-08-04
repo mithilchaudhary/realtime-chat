@@ -1,5 +1,7 @@
 // OpenAI Realtime API with WebRTC
 
+
+// Main class for managing the realtime audio chat UI and WebRTC logic
 class RealtimeAudioChat {
     constructor() {
         this.peerConnection = null;
@@ -7,11 +9,11 @@ class RealtimeAudioChat {
         this.audioStream = null;
         this.remoteAudio = new Audio();
         this.remoteAudio.autoplay = true;
-
         this.initializeElements();
         this.setupEventListeners();
     }
 
+    // Cache references to important DOM elements
     initializeElements() {
         this.startBtn = document.getElementById('start-chat-btn');
         this.stopBtn = document.getElementById('stop-chat-btn');
@@ -19,40 +21,45 @@ class RealtimeAudioChat {
         this.messagesContainer = document.getElementById('messages');
     }
 
+    // Set up button click event listeners
     setupEventListeners() {
         this.startBtn.addEventListener('click', () => this.startChat());
         this.stopBtn.addEventListener('click', () => this.stopChat());
     }
 
+    /**
+     * Starts a new chat session: gets an ephemeral key, sets up audio, WebRTC, and data channel.
+     */
     async startChat() {
-        if (!CONFIG.OPENAI_API_KEY || CONFIG.OPENAI_API_KEY === 'your-openai-api-key-here') {
-            this.addMessage('system', 'Please set your OpenAI API key in config.js');
-            return;
-        }
-
         this.updateStatus('connecting', 'Connecting...');
         this.startBtn.disabled = true;
-
         try {
-            // 1. Get microphone access
+            // Step 1: Get ephemeral key from our server
+            const tokenResponse = await fetch("/session");
+            if (!tokenResponse.ok) {
+                const errorText = await tokenResponse.text();
+                throw new Error(`Failed to get session token: ${tokenResponse.status} ${errorText}`);
+            }
+            const data = await tokenResponse.json();
+            const EPHEMERAL_KEY = data.client_secret.value;
+            if (!EPHEMERAL_KEY) {
+                throw new Error("Ephemeral key not found in server response.");
+            }
+            // Step 2: Get microphone access
             this.audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-            // 2. Create RTCPeerConnection
+            // Step 3: Create RTCPeerConnection
             this.peerConnection = new RTCPeerConnection();
-
             // Handle incoming audio from OpenAI
             this.peerConnection.ontrack = (event) => {
                 if (event.streams && event.streams[0]) {
                     this.remoteAudio.srcObject = event.streams[0];
                 }
             };
-
             // Add microphone track to send audio to OpenAI
             this.audioStream.getTracks().forEach(track => {
                 this.peerConnection.addTrack(track, this.audioStream);
             });
-
-            // 3. Create Data Channel for events
+            // Step 4: Create Data Channel for events
             this.dataChannel = this.peerConnection.createDataChannel("oai-events");
             this.dataChannel.onmessage = (event) => this.handleRealtimeMessage(JSON.parse(event.data));
             this.dataChannel.onopen = () => {
@@ -61,39 +68,37 @@ class RealtimeAudioChat {
                 this.addMessage('system', 'Connected! Ask me about Indian tourism.');
                 this.configureSession();
             };
-
-            // 4. Create and send SDP offer
+            // Step 5: Create and send SDP offer
             const offer = await this.peerConnection.createOffer();
             await this.peerConnection.setLocalDescription(offer);
-
             const sdpResponse = await fetch(`https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2025-06-03`, {
                 method: "POST",
                 headers: {
-                    'Authorization': `Bearer ${CONFIG.OPENAI_API_KEY}`,
+                    'Authorization': `Bearer ${EPHEMERAL_KEY}`,
                     'Content-Type': 'application/sdp'
                 },
                 body: offer.sdp
             });
-
             if (!sdpResponse.ok) {
                 const errorText = await sdpResponse.text();
                 throw new Error(`Failed to get SDP answer: ${sdpResponse.status} ${errorText}`);
             }
-
             const answer = {
                 type: "answer",
                 sdp: await sdpResponse.text(),
             };
             await this.peerConnection.setRemoteDescription(answer);
-
         } catch (error) {
-            console.error('Error starting chat:', error);
+            // Show error in UI and reset state
             this.addMessage('system', `Failed to start chat: ${error.message}`);
             this.updateStatus('disconnected', 'Connection failed');
             this.startBtn.disabled = false;
         }
     }
 
+    /**
+     * Stops the current chat session and cleans up all resources.
+     */
     stopChat() {
         if (this.dataChannel) {
             this.dataChannel.close();
@@ -108,32 +113,36 @@ class RealtimeAudioChat {
             this.audioStream = null;
         }
         this.remoteAudio.srcObject = null;
-
         this.updateStatus('disconnected', 'Disconnected');
         this.startBtn.disabled = false;
         this.stopBtn.disabled = true;
         this.addMessage('system', 'Chat ended.');
     }
 
+    /**
+     * Sends session configuration instructions to the assistant via the data channel.
+     */
     configureSession() {
         if (this.dataChannel && this.dataChannel.readyState === 'open') {
             const event = {
                 type: "session.update",
                 session: {
                     instructions: "You are an expert on Indian tourism. Only answer questions about Indian tourism. For any other questions, respond with 'I can only answer questions about Indian tourism.'",
-                    voice: "verse" // Example voice
+                    voice: "verse"
                 },
             };
             this.dataChannel.send(JSON.stringify(event));
         }
     }
 
+    /**
+     * Handles messages received from the assistant via the data channel.
+     * Updates the UI based on the message type.
+     */
     handleRealtimeMessage(message) {
-        console.log('Received message:', message.type, message); // Added for debugging
-
         switch (message.type) {
             case 'session.updated':
-                console.log('Session configured.');
+                // Session configuration acknowledged
                 break;
             case 'input_audio_buffer.speech_started':
                 this.addMessage('system', 'Listening...');
@@ -143,27 +152,23 @@ class RealtimeAudioChat {
                 break;
             case 'response.audio_transcript.done':
                 if (message.transcript) {
-                    this.addMessage('user', message.transcript);
-                }
-                break;
-            case 'response.done':
-                if (message.response && message.response.output && message.response.output[0] && message.response.output[0].text) {
-                    this.addMessage('assistant', message.response.output[0].text);
+                    this.addMessage('assistant', message.transcript);
                 }
                 break;
             case 'error':
-                console.error('API Error:', message.error);
                 this.addMessage('system', `Error: ${message.error.message || JSON.stringify(message.error)}`);
                 break;
             // Add other event handlers as needed, keeping it minimal for now
         }
     }
 
+    // Updates the connection status display in the UI
     updateStatus(status, text) {
         this.connectionStatus.className = `status ${status}`;
         this.connectionStatus.querySelector('.status-text').textContent = text;
     }
 
+    // Adds a message to the chat log in the UI
     addMessage(type, content) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${type}`;
@@ -173,6 +178,7 @@ class RealtimeAudioChat {
     }
 }
 
+// Initialize the chat UI when the DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     window.realtimeChat = new RealtimeAudioChat();
 });

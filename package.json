@@ -1,0 +1,14 @@
+{
+    "name": "realtime-chat-server",
+    "version": "1.0.0",
+    "description": "Server to provide ephemeral keys for the Realtime Audio Chat application.",
+    "main": "server.js",
+    "type": "module",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "dependencies": {
+        "express": "^4.19.2",
+        "dotenv": "^16.4.5"
+    }
+}

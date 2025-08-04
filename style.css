@@ -8,7 +8,7 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #FF9933 0%, #F47C20 100%);
     min-height: 100vh;
     color: #333;
 }
@@ -55,8 +55,9 @@ header p {
     align-items: center;
     margin-bottom: 30px;
     padding: 15px;
-    background: #f8f9fa;
+    background: #F47C20;
     border-radius: 12px;
+    color: white;
 }
 
 .status {
@@ -74,8 +75,8 @@ header p {
 }
 
 .status.connected .status-dot {
-    background: #10b981;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+    background: #138808;
+    box-shadow: 0 0 0 3px rgba(19, 136, 8, 0.3);
 }
 
 .status.connecting .status-dot {
@@ -84,19 +85,19 @@ header p {
 }
 
 .status.disconnected .status-dot {
-    background: #ef4444;
+    background: #FFFFFF;
 }
 
 .status.connected .status-text {
-    color: #10b981;
+    color: white;
 }
 
 .status.connecting .status-text {
-    color: #f59e0b;
+    color: white;
 }
 
 .status.disconnected .status-text {
-    color: #ef4444;
+    color: white;
 }
 
 .audio-indicator {
@@ -152,25 +153,25 @@ header p {
 }
 
 .btn.primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #FF9933 0%, #F47C20 100%);
     color: white;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 4px 15px rgba(255, 153, 51, 0.4);
 }
 
 .btn.primary:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    box-shadow: 0 6px 20px rgba(255, 153, 51, 0.6);
 }
 
 .btn.secondary {
-    background: #f3f4f6;
-    color: #374151;
-    border: 2px solid #d1d5db;
+    background: #138808;
+    color: white;
+    border: 2px solid #138808;
 }
 
 .btn.secondary:hover:not(:disabled) {
-    background: #e5e7eb;
-    border-color: #9ca3af;
+    background: #117707;
+    border-color: #117707;
 }
 
 .btn-icon {
@@ -189,7 +190,7 @@ header p {
     max-height: 400px;
     overflow-y: auto;
     padding: 20px;
-    background: #f8f9fa;
+    background: #E8F5E9; /* Light green background */
     border-radius: 12px;
 }
 
@@ -201,25 +202,25 @@ header p {
 }
 
 .message.user {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #000080 0%, #0000CD 100%);
     color: white;
-    align-self: flex-end;
-    margin-left: auto;
+    align-self: flex-start;
+    margin-right: auto;
 }
 
 .message.assistant {
     background: white;
     color: #333;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #138808; /* Green border */
     align-self: flex-start;
 }
 
 .message.system {
-    background: #fef3c7;
-    color: #92400e;
+    background: #D5F5E3;
+    color: #138808;
     align-self: center;
     text-align: center;
-    border: 1px solid #fbbf24;
+    border: 1px solid #138808;
 }
 
 .message-content {
