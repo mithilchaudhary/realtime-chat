@@ -2,6 +2,24 @@
 
 This project is a web application that enables real-time audio chat with an AI assistant using OpenAI's Realtime API and WebRTC. The assistant is configured to answer only questions about Indian tourism.
 
+[Watch the demo here!](https://drive.google.com/file/d/1fEM3bHZZaBkD5wYZ-gU02oQqjtyinGgt/view?usp=drive_link)
+
+## Features
+
+- Real-time audio chat with an AI assistant
+- Fast, low-latency streaming using WebRTC
+- Secure: API keys are never exposed to the client
+- Responsive UI, works on desktop and mobile
+- Assistant is focused on Indian tourism (customizable instructions)
+
+## Tech Stack
+
+- **Frontend:** HTML, CSS, JavaScript
+- **Backend:** Node.js, Express
+- **APIs:** OpenAI Realtime API, WebRTC for audio streaming
+- **Why this stack?**  
+  Simple, fast to prototype, and easy to deploy. Using vanilla JS keeps the page lightweight and easy to understand.
+
 ## Prerequisites
 - [Node.js](https://nodejs.org/) (includes npm) installed on your system (Windows or macOS).
 - An OpenAI API key with access to the Realtime API.

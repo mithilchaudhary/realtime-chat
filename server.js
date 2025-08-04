@@ -1,4 +1,3 @@
-
 // Import required modules
 import express from "express";
 import 'dotenv/config';
@@ -39,6 +38,7 @@ app.get("/session", async (req, res) => {
         res.send(data);
     } catch (error) {
         // Log error and send generic error message to client
+        console.error("Error creating session:", error);
         res.status(500).send({ error: "Failed to create session." });
     }
 });
