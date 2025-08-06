@@ -1,7 +1,3 @@
-// OpenAI Realtime API with WebRTC
-
-
-// Main class for managing the realtime audio chat UI and WebRTC logic
 class RealtimeAudioChat {
     constructor() {
         this.peerConnection = null;
@@ -21,7 +17,6 @@ class RealtimeAudioChat {
         this.messagesContainer = document.getElementById('messages');
     }
 
-    // Set up button click event listeners
     setupEventListeners() {
         this.startBtn.addEventListener('click', () => this.startChat());
         this.stopBtn.addEventListener('click', () => this.stopChat());
@@ -34,7 +29,7 @@ class RealtimeAudioChat {
         this.updateStatus('connecting', 'Connecting...');
         this.startBtn.disabled = true;
         try {
-            // Step 1: Get ephemeral key from our server
+            //Get ephemeral key from our server
             const tokenResponse = await fetch("/session");
             if (!tokenResponse.ok) {
                 const errorText = await tokenResponse.text();
@@ -45,9 +40,9 @@ class RealtimeAudioChat {
             if (!EPHEMERAL_KEY) {
                 throw new Error("Ephemeral key not found in server response.");
             }
-            // Step 2: Get microphone access
+            //Get microphone access
             this.audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            // Step 3: Create RTCPeerConnection
+            //Create RTCPeerConnection
             this.peerConnection = new RTCPeerConnection();
             // Handle incoming audio from OpenAI
             this.peerConnection.ontrack = (event) => {
@@ -59,7 +54,7 @@ class RealtimeAudioChat {
             this.audioStream.getTracks().forEach(track => {
                 this.peerConnection.addTrack(track, this.audioStream);
             });
-            // Step 4: Create Data Channel for events
+            //Create Data Channel for events
             this.dataChannel = this.peerConnection.createDataChannel("oai-events");
             this.dataChannel.onmessage = (event) => this.handleRealtimeMessage(JSON.parse(event.data));
             this.dataChannel.onopen = () => {
@@ -68,7 +63,7 @@ class RealtimeAudioChat {
                 this.addMessage('system', 'Connected! Ask me about Indian tourism.');
                 this.configureSession();
             };
-            // Step 5: Create and send SDP offer
+            //Create and send SDP offer
             const offer = await this.peerConnection.createOffer();
             await this.peerConnection.setLocalDescription(offer);
             const sdpResponse = await fetch(`https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2025-06-03`, {
@@ -137,7 +132,6 @@ class RealtimeAudioChat {
 
     /**
      * Handles messages received from the assistant via the data channel.
-     * Updates the UI based on the message type.
      */
     handleRealtimeMessage(message) {
         console.log("Received message:", message);
@@ -166,7 +160,6 @@ class RealtimeAudioChat {
             case 'error':
                 this.addMessage('system', `Error: ${message.error.message || JSON.stringify(message.error)}`);
                 break;
-            // Add other event handlers as needed, keeping it minimal for now
         }
     }
 
@@ -194,13 +187,13 @@ class RealtimeAudioChat {
         }
     }
 
-    // Updates the connection status display in the UI
+    // Updates the connection status display
     updateStatus(status, text) {
         this.connectionStatus.className = `status ${status}`;
         this.connectionStatus.querySelector('.status-text').textContent = text;
     }
 
-    // Adds a message to the chat log in the UI
+    // Adds a message to the chat log
     addMessage(type, content) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${type}`;
@@ -210,7 +203,7 @@ class RealtimeAudioChat {
     }
 }
 
-// Initialize the chat UI when the DOM is ready
+// Initialize when the DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     window.realtimeChat = new RealtimeAudioChat();
 });
