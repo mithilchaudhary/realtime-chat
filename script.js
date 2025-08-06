@@ -140,9 +140,17 @@ class RealtimeAudioChat {
      * Updates the UI based on the message type.
      */
     handleRealtimeMessage(message) {
+        console.log("Received message:", message);
         switch (message.type) {
             case 'session.updated':
                 // Session configuration acknowledged
+                break;
+            case 'conversation.item.input_audio_transcription.completed':
+                if (message.transcript) {
+                    console.log("User said:", message.transcript);
+                    this.addMessage('user', message.transcript);
+                    this.extractKeywords(message.transcript);
+                }
                 break;
             case 'input_audio_buffer.speech_started':
                 this.addMessage('system', 'Listening...');
@@ -159,6 +167,30 @@ class RealtimeAudioChat {
                 this.addMessage('system', `Error: ${message.error.message || JSON.stringify(message.error)}`);
                 break;
             // Add other event handlers as needed, keeping it minimal for now
+        }
+    }
+
+    async extractKeywords(text) {
+        try {
+            const response = await fetch('/keywords', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text }),
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Failed to get keywords: ${response.status} ${errorText}`);
+            }
+
+            const data = await response.json();
+            if (data.keywords) {
+                this.addMessage('system', `Keywords: ${data.keywords}`);
+            }
+        } catch (error) {
+            this.addMessage('system', `Error extracting keywords: ${error.message}`);
         }
     }
 
